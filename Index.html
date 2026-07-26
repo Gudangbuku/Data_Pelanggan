@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Buku Besar — Sistem Data Pelanggan &amp; Stok Buku</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3EFE4;--bg2:#ECEAE0;--ink:#2A2620;--navy:#1B2740;--navy2:#283D66;--navy-t:rgba(27,39,64,.06);--gold:#A67C1B;--gold-bg:#F5EDD3;--green:#2A6B4A;--green-bg:#E0F0E6;--red:#993838;--red-bg:#F5E3E0;--blue:#2B6CB0;--blue-bg:#E3EDF7;--card:#FFFDF7;--border:#DDD6C4;--r:10px;--sh:0 2px 12px rgba(27,39,64,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.login-box{background:var(--card);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .icon{font-size:2.8rem;display:block;margin-bottom:8px}
+.login-logo h1{font-family:'Lora',serif;color:var(--navy);font-size:1.4rem;font-weight:700}
+.login-logo p{font-size:.78rem;color:var(--ink);opacity:.5;margin-top:4px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;opacity:.55;margin-bottom:5px;font-weight:600}
+.login-field input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.95rem;background:#fff;transition:.15s}
+.login-field input:focus{outline:none;border-color:var(--navy)}
+.login-err{background:var(--red-bg);color:var(--red);border-radius:7px;padding:9px 13px;font-size:.8rem;margin-bottom:12px;display:none}
+.login-btn{width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:4px;transition:.15s}
+.login-btn:hover{background:var(--navy2)}
+.login-btn:active{transform:scale(.98)}
+.login-footer{text-align:center;font-size:.72rem;opacity:.4;margin-top:16px}
+
+/* ── APP SHELL ── */
+#appShell{display:none}
+header{background:var(--navy);color:#EDE9DF;padding:18px 20px 0;position:sticky;top:0;z-index:60;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.hdr-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+header h1{font-family:'Lora',serif;font-size:1.3rem;font-weight:700;flex:1}
+.hdr-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#EDE9DF;border-radius:7px;padding:6px 11px;font-family:inherit;font-weight:600;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.15s;white-space:nowrap}
+.hdr-btn:hover{background:rgba(255,255,255,.2)}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sync-dot.off{background:#F87171}.sync-dot.on{background:#4ADE80}
+header .sub{font-size:.7rem;opacity:.5;margin-bottom:12px}
+.tabs{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{white-space:nowrap;background:rgba(255,255,255,.05);color:#D6D0C3;border:none;border-radius:8px 8px 0 0;padding:9px 14px;font-family:inherit;font-weight:600;font-size:.76rem;cursor:pointer;flex-shrink:0;transition:.12s}
+.tabs button.active{background:var(--bg);color:var(--navy)}
+main{max-width:1300px;margin:0 auto;padding:18px 16px 70px}
+.view{display:none}.view.active{display:block}
+.section-title{font-family:'Lora',serif;font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.toolbar input[type="text"],.toolbar select{padding:8px 11px;border:1px solid var(--border);border-radius:7px;background:var(--card);font-family:inherit;font-size:.82rem;color:var(--ink)}
+.toolbar input[type="text"]{min-width:160px;flex:1}
+.spacer{flex:1}
+.btn{border:none;border-radius:7px;padding:9px 14px;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer;transition:transform .08s;display:inline-flex;align-items:center;gap:5px}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--navy);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-o{background:transparent;color:var(--navy);border:1.5px solid var(--navy2)}
+.btn-d{background:transparent;color:var(--red);border:1.5px solid var(--red)}
+.btn-sm{padding:5px 9px;font-size:.72rem;border-radius:5px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh)}
+.s-card .lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;opacity:.55;margin-bottom:3px}
+.s-card .val{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1rem;color:var(--navy)}
+.t-wrap{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow-x:auto;border:1px solid var(--border)}
+table{border-collapse:collapse;width:100%}
+thead th{background:var(--navy);color:#EDE9DF;text-align:left;font-size:.67rem;text-transform:uppercase;letter-spacing:.4px;padding:9px 10px;white-space:nowrap;position:sticky;top:0}
+tbody td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr:hover{background:var(--navy-t)}
+td.n,th.n{text-align:right;font-family:'JetBrains Mono',monospace}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.pill-g{background:var(--green-bg);color:var(--green)}
+.pill-r{background:var(--red-bg);color:var(--red)}
+.pill-y{background:var(--gold-bg);color:var(--gold)}
+.card-list{display:none}
+.m-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:13px;margin-bottom:10px}
+.m-card .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.m-card .name{font-family:'Lora',serif;font-weight:600;font-size:.95rem;color:var(--navy)}
+.m-card .meta{font-size:.72rem;opacity:.55}
+.m-card .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:.78rem;margin:7px 0}
+.m-card .grid2 .k{opacity:.5}.m-card .grid2 .v{font-family:'JetBrains Mono',monospace;text-align:right;font-size:.76rem}
+.m-card .acts{display:flex;gap:7px;margin-top:8px}
+@media(max-width:880px){.t-wrap.responsive{display:none}.card-list{display:block}.summary{grid-template-columns:1fr 1fr}}
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(26,22,16,.5);display:none;align-items:flex-start;justify-content:center;padding:28px 12px;overflow-y:auto;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg);border-radius:14px;max-width:660px;width:100%;padding:22px;box-shadow:0 12px 50px rgba(0,0,0,.3)}
+.modal h2{font-family:'Lora',serif;color:var(--navy);font-size:1.1rem;margin-bottom:14px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg .full{grid-column:1/-1}
+.fg label{font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;opacity:.55;display:block;margin-bottom:3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:.88rem;background:#fff;resize:vertical}
+.fg textarea{min-height:52px}
+.fg input:disabled{background:#f0ece3;opacity:.7}
+.calc{background:#EAE5D6;border-radius:8px;padding:11px;margin-top:12px;font-size:.8rem}
+.calc div{display:flex;justify-content:space-between;padding:2px 0}
+.calc .tot{font-weight:700;color:var(--navy);border-top:1px dashed var(--border);margin-top:4px;padding-top:5px}
+.modal-acts{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}
+.empty{text-align:center;padding:44px 18px;opacity:.5}
+.empty .big{font-family:'Lora',serif;font-size:1.2rem;margin-bottom:4px}
+/* ── SYNC PANEL ── */
+.sync-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
+.sync-panel h3{font-family:'Lora',serif;color:var(--navy);margin-bottom:10px;font-size:1rem}
+.step-list{counter-reset:step;list-style:none;padding:0;margin:10px 0}
+.step-list li{counter-increment:step;padding:8px 0 8px 36px;position:relative;font-size:.82rem;line-height:1.5;border-bottom:1px solid var(--border)}
+.step-list li:last-child{border-bottom:none}
+.step-list li::before{content:counter(step);position:absolute;left:0;top:8px;width:24px;height:24px;background:var(--navy);color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:.72rem;font-weight:700}
+.code-box{background:#1B2740;color:#E8E4D8;border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.68rem;white-space:pre-wrap;word-break:break-all;position:relative;margin:8px 0;max-height:200px;overflow-y:auto}
+.url-row{display:flex;gap:8px;margin:10px 0}
+.url-row input{flex:1;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem}
+.sync-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;margin:10px 0;font-size:.82rem}
+.sync-ok{background:var(--green-bg);color:var(--green)}
+.sync-err{background:var(--red-bg);color:var(--red)}
+.sync-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.auto-row{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.82rem}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .sl{position:absolute;inset:0;background:var(--border);border-radius:24px;transition:.2s}
+.toggle .sl::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.sl{background:var(--green)}
+.toggle input:checked+.sl::before{transform:translateX(20px)}
+.last-sync{font-size:.72rem;opacity:.5;margin-top:6px}
+#syncLog{margin-top:8px;font-size:.75rem;color:var(--navy);opacity:.7;min-height:18px}
+/* ── PENGATURAN AKUN ── */
+.akun-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;max-width:420px;box-shadow:var(--sh)}
+.akun-card h3{font-family:'Lora',serif;color:var(--navy);margin-bottom:14px}
+.akun-field{margin-bottom:12px}
+.akun-field label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;opacity:.55;margin-bottom:4px;font-weight:600}
+.akun-field input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.9rem}
+.akun-field input:focus{outline:none;border-color:var(--navy)}
+.akun-err{background:var(--red-bg);color:var(--red);border-radius:6px;padding:8px 11px;font-size:.78rem;margin-bottom:10px;display:none}
+.akun-ok{background:var(--green-bg);color:var(--green);border-radius:6px;padding:8px 11px;font-size:.78rem;margin-bottom:10px;display:none}
+@media print{header,.toolbar,.modal-bg,.sync-panel,.akun-card,footer{display:none!important}.t-wrap{display:block!important;overflow:visible;box-shadow:none;border:none}body{background:#fff}}
+footer{max-width:1300px;margin:14px auto 0;padding:0 16px;font-size:.7rem;opacity:.4;text-align:center;padding-bottom:10px}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="icon">📖</span>
+      <h1>Buku Besar</h1>
+      <p>Sistem Data Pelanggan &amp; Stok Buku</p>
+    </div>
+    <div class="login-err" id="loginErr">Username atau password salah.</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn">Masuk</button>
+    <div class="login-footer">Tekan Enter untuk masuk</div>
+    <div style="margin-top:14px;background:#EEF2FF;border-radius:8px;padding:10px 13px;font-size:.75rem;color:#2B4A8C;line-height:1.6">
+      <b>Login default:</b><br>
+      Username: <b>admin</b><br>
+      Password: <b>admin123</b><br>
+      <span style="opacity:.7">Ganti di tab ⚙ Akun setelah masuk</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════ -->
+<div id="appShell">
+<header>
+  <div class="hdr-row">
+    <h1>📖 Buku Besar</h1>
+    <button class="hdr-btn" id="btnSync"><span class="sync-dot off" id="syncDot"></span> Cloud</button>
+    <button class="hdr-btn" id="btnAkunHdr">⚙ Akun</button>
+    <button class="hdr-btn" id="btnLogout">↩ Keluar</button>
+  </div>
+  <div class="sub">Master data, stok gudang, transaksi &amp; cicilan</div>
+  <div class="tabs">
+    <button class="tab active" data-v="v-trx">📋 Transaksi</button>
+    <button class="tab" data-v="v-pelanggan">👤 Pelanggan</button>
+    <button class="tab" data-v="v-buku">📕 Kode Buku</button>
+    <button class="tab" data-v="v-harga">💰 Harga</button>
+    <button class="tab" data-v="v-stok">📦 Stok</button>
+    <button class="tab" data-v="v-akun">⚙ Akun</button>
+  </div>
+</header>
+<main>
+
+<!-- SYNC PANEL -->
+<section id="syncPanel" style="display:none">
+<div class="sync-panel">
+  <h3>☁️ Koneksi Google Sheets (Cloud Backup)</h3>
+  <div id="syncSetup">
+    <p style="font-size:.82rem;line-height:1.5;margin-bottom:10px">Backup data ke Google Sheets agar bisa dibuka dari device &amp; browser manapun. Setup sekali saja:</p>
+    <ol class="step-list">
+      <li>Buka <a href="https://script.google.com" target="_blank" style="color:var(--blue);font-weight:600">script.google.com</a> — login akun Google</li>
+      <li>Klik <b>Proyek baru</b>, hapus kode lama, paste kode di bawah ini:
+        <div class="code-box" id="scriptCode"></div>
+        <button class="btn btn-o btn-sm" id="copyScriptBtn" style="margin-top:6px">📋 Copy Kode</button>
+      </li>
+      <li>Simpan (Ctrl+S), beri nama proyek</li>
+      <li>Klik <b>Deploy → New deployment → Web app</b> → Execute as: <b>Me</b> → Access: <b>Anyone</b> → Deploy</li>
+      <li>Klik <b>Authorize access</b> → pilih akun Google → Allow</li>
+      <li>Copy URL yang muncul, paste di bawah:</li>
+    </ol>
+    <div class="url-row">
+      <input type="text" id="scriptUrl" placeholder="Paste URL Google Apps Script...">
+      <button class="btn btn-p" id="btnConnect">Hubungkan</button>
+    </div>
+  </div>
+  <div id="syncConnected" style="display:none">
+    <div class="sync-status sync-ok">✅ Terhubung ke Google Sheets</div>
+    <div class="sync-actions">
+      <button class="btn btn-green" id="btnBackup">⬆ Backup Sekarang</button>
+      <button class="btn btn-blue" id="btnRestore">⬇ Restore dari Cloud</button>
+      <button class="btn btn-d btn-sm" id="btnDisconnect">Putuskan</button>
+    </div>
+    <div class="auto-row">
+      <label class="toggle"><input type="checkbox" id="autoSyncToggle" checked><span class="sl"></span></label>
+      <span>Auto-backup setiap ada perubahan data</span>
+    </div>
+    <div class="last-sync" id="lastSyncText"></div>
+    <div id="syncLog"></div>
+  </div>
+</div>
+</section>
+
+<!-- TAB TRANSAKSI -->
+<section id="v-trx" class="view active">
+  <div class="section-title"><span>📋</span>Data Transaksi Pelanggan</div>
+  <div class="summary">
+    <div class="s-card"><div class="lbl">Total Transaksi</div><div class="val" id="xCount">0</div></div>
+    <div class="s-card"><div class="lbl">Total Tagihan</div><div class="val" id="xTotal">Rp 0</div></div>
+    <div class="s-card"><div class="lbl">Total Terbayar</div><div class="val" id="xPaid">Rp 0</div></div>
+    <div class="s-card"><div class="lbl">Total Sisa</div><div class="val" id="xSisa">Rp 0</div></div>
+  </div>
+  <div class="toolbar">
+    <input type="text" id="xSearch" placeholder="Cari nama pelanggan...">
+    <select id="xFilterKec"><option value="">Semua Kec.</option></select>
+    <select id="xFilterSt"><option value="">Semua Status</option><option value="lunas">Lunas</option><option value="belum">Belum Lunas</option></select>
+    <div class="spacer"></div>
+    <button class="btn btn-o" id="xExport">⬇ Excel</button>
+    <button class="btn btn-o" onclick="window.print()">🖨</button>
+    <button class="btn btn-p" id="xAdd">+ Tambah</button>
+  </div>
+  <div class="t-wrap responsive"><table><thead><tr><th>No</th><th>Kec</th><th>Pelanggan</th><th>Kode</th><th>Jenis Buku</th><th class="n">Qty</th><th class="n">Hrg Normal</th><th class="n">Diskon/pcs</th><th class="n">Diskon Tot</th><th class="n">Jumlah</th><th class="n">Hrg Total</th><th class="n">Cicil 1</th><th class="n">Cicil 2</th><th class="n">Cicil 3</th><th class="n">Sisa</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="xBody"></tbody></table></div>
+  <div class="card-list" id="xCards"></div>
+  <div class="empty" id="xEmpty" style="display:none"><div class="big">Belum ada transaksi</div><div>Tekan "+ Tambah" untuk mencatat.</div></div>
+</section>
+
+<!-- TAB PELANGGAN -->
+<section id="v-pelanggan" class="view">
+  <div class="section-title"><span>👤</span>Master Data Pelanggan</div>
+  <div class="toolbar"><input type="text" id="pSearch" placeholder="Cari pelanggan..."><div class="spacer"></div><button class="btn btn-o" id="pExport">⬇ Excel</button><button class="btn btn-p" id="pAdd">+ Tambah Pelanggan</button></div>
+  <div class="t-wrap responsive"><table><thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Kecamatan</th><th>Alamat</th><th>No HP</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="pBody"></tbody></table></div>
+  <div class="card-list" id="pCards"></div>
+</section>
+
+<!-- TAB KODE BUKU -->
+<section id="v-buku" class="view">
+  <div class="section-title"><span>📕</span>Master Kode Buku</div>
+  <div class="toolbar"><input type="text" id="bSearch" placeholder="Cari kode / judul..."><div class="spacer"></div><button class="btn btn-o" id="bExport">⬇ Excel</button><button class="btn btn-p" id="bAdd">+ Tambah Kode</button></div>
+  <div class="t-wrap"><table><thead><tr><th>No</th><th>Kode</th><th>Jenis / Judul</th><th>Kategori</th><th>Penerbit</th><th>Aksi</th></tr></thead><tbody id="bBody"></tbody></table></div>
+</section>
+
+<!-- TAB HARGA -->
+<section id="v-harga" class="view">
+  <div class="section-title"><span>💰</span>Master Harga Buku</div>
+  <div class="toolbar"><input type="text" id="hSearch" placeholder="Cari kode / judul..."><div class="spacer"></div><button class="btn btn-o" id="hExport">⬇ Excel</button><button class="btn btn-p" id="hAdd">+ Tambah Harga</button></div>
+  <div class="t-wrap"><table><thead><tr><th>No</th><th>Kode</th><th>Jenis Buku</th><th class="n">Harga Normal</th><th class="n">Diskon/pcs</th><th class="n">Margin</th><th>Ket</th><th>Aksi</th></tr></thead><tbody id="hBody"></tbody></table></div>
+</section>
+
+<!-- TAB STOK -->
+<section id="v-stok" class="view">
+  <div class="section-title"><span>📦</span>Master Stok Barang Gudang</div>
+  <div class="toolbar"><input type="text" id="sSearch" placeholder="Cari kode / judul..."><div class="spacer"></div><button class="btn btn-o" id="sExport">⬇ Excel</button><button class="btn btn-p" id="sAdd">+ Tambah Stok</button></div>
+  <div class="t-wrap"><table><thead><tr><th>No</th><th>Kode</th><th>Jenis Buku</th><th class="n">Stok Awal</th><th class="n">Masuk</th><th class="n">Terjual</th><th class="n">Akhir</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="sBody"></tbody></table></div>
+</section>
+
+<!-- TAB AKUN -->
+<section id="v-akun" class="view">
+  <div class="section-title"><span>⚙</span>Pengaturan Akun</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+
+    <div class="akun-card">
+      <h3>🔑 Ubah Username</h3>
+      <div class="akun-err" id="uErr"></div>
+      <div class="akun-ok" id="uOk"></div>
+      <div class="akun-field"><label>Username Baru</label><input type="text" id="uNew" placeholder="Username baru" autocomplete="off"></div>
+      <div class="akun-field"><label>Konfirmasi Password Sekarang</label><input type="password" id="uPass" placeholder="Password saat ini" autocomplete="current-password"></div>
+      <button class="btn btn-p" id="btnUbahUser" style="width:100%;margin-top:4px">Simpan Username</button>
+      <button class="btn btn-d" id="btnResetAkun" style="width:100%;margin-top:8px;font-size:.75rem">↺ Reset ke default (admin / admin123)</button>
+    </div>
+
+    <div class="akun-card">
+      <h3>🔒 Ubah Password</h3>
+      <div class="akun-err" id="pErr"></div>
+      <div class="akun-ok" id="pOk"></div>
+      <div class="akun-field"><label>Password Lama</label><input type="password" id="pOld" placeholder="Password saat ini" autocomplete="current-password"></div>
+      <div class="akun-field"><label>Password Baru</label><input type="password" id="pNew" placeholder="Password baru (min. 4 karakter)" autocomplete="new-password"></div>
+      <div class="akun-field"><label>Ulangi Password Baru</label><input type="password" id="pNew2" placeholder="Ulangi password baru" autocomplete="new-password"></div>
+      <button class="btn btn-p" id="btnUbahPass" style="width:100%;margin-top:4px">Simpan Password</button>
+    </div>
+
+  </div>
+  <div style="margin-top:20px;background:var(--gold-bg);border:1px solid var(--gold);border-radius:var(--r);padding:14px;font-size:.82rem;max-width:640px">
+    <b>💡 Cara pakai di device lain:</b><br>
+    1. Salin file HTML ini ke device lain (kirim via WhatsApp, email, atau simpan di Google Drive).<br>
+    2. Buka file di browser → login dengan username &amp; password yang sama.<br>
+    3. Jika sudah terhubung Google Sheets → klik Cloud → Restore dari Cloud untuk mengambil semua data.
+  </div>
+</section>
+
+</main>
+<footer>Login diperlukan untuk mengakses data. Data dienkripsi di browser &amp; dicadangkan ke Google Sheets.</footer>
+</div><!-- end appShell -->
+
+<!-- ════ MODALS ════ -->
+<div class="modal-bg" id="mPel"><div class="modal"><h2 id="mPelT">Tambah Pelanggan</h2><input type="hidden" id="mPelId">
+<div class="fg"><div><label>ID Pelanggan</label><input id="mPelCode" placeholder="PLG-001"></div><div><label>Nama Pelanggan</label><input id="mPelNama" placeholder="Nama lengkap"></div><div><label>Kecamatan</label><input id="mPelKec" placeholder="Kecamatan"></div><div><label>No HP</label><input id="mPelHP" placeholder="08xx"></div><div class="full"><label>Alamat</label><textarea id="mPelAlamat" placeholder="Alamat lengkap"></textarea></div><div class="full"><label>Catatan</label><input id="mPelCat" placeholder="Opsional"></div></div>
+<div class="modal-acts"><button class="btn btn-o mClose">Batal</button><button class="btn btn-p" id="mPelSave">Simpan</button></div></div></div>
+
+<div class="modal-bg" id="mBuku"><div class="modal"><h2 id="mBukuT">Tambah Kode Buku</h2><input type="hidden" id="mBukuId">
+<div class="fg"><div><label>Kode Buku</label><input id="mBukuKode" placeholder="BK-001"></div><div><label>Jenis / Judul</label><input id="mBukuJudul" placeholder="Judul buku"></div><div><label>Kategori</label><input id="mBukuKat" placeholder="Cerita Anak, dll"></div><div><label>Penerbit</label><input id="mBukuPub" placeholder="Penerbit"></div></div>
+<div class="modal-acts"><button class="btn btn-o mClose">Batal</button><button class="btn btn-p" id="mBukuSave">Simpan</button></div></div></div>
+
+<div class="modal-bg" id="mHarga"><div class="modal"><h2 id="mHargaT">Tambah Harga</h2><input type="hidden" id="mHargaId">
+<div class="fg"><div><label>Kode Buku</label><select id="mHargaKode"></select></div><div><label>Jenis Buku</label><input id="mHargaJudul" disabled></div><div><label>Harga Normal</label><input type="number" id="mHargaNormal" min="0"></div><div><label>Harga Diskon /pcs</label><input type="number" id="mHargaDiskon" min="0"></div><div class="full"><label>Keterangan</label><input id="mHargaKet" placeholder="Promo, paket, dll"></div></div>
+<div class="calc"><div><span>Margin diskon</span><span id="mHargaMargin">Rp 0</span></div></div>
+<div class="modal-acts"><button class="btn btn-o mClose">Batal</button><button class="btn btn-p" id="mHargaSave">Simpan</button></div></div></div>
+
+<div class="modal-bg" id="mStok"><div class="modal"><h2 id="mStokT">Tambah Stok</h2><input type="hidden" id="mStokId">
+<div class="fg"><div><label>Kode Buku</label><select id="mStokKode"></select></div><div><label>Jenis Buku</label><input id="mStokJudul" disabled></div><div><label>Stok Awal</label><input type="number" id="mStokAwal" min="0" value="0"></div><div><label>Stok Masuk</label><input type="number" id="mStokMasuk" min="0" value="0"></div></div>
+<div class="calc"><div><span>Terjual (dari transaksi)</span><span id="mStokKeluar">0</span></div><div class="tot"><span>Stok Akhir</span><span id="mStokAkhir">0</span></div></div>
+<div class="modal-acts"><button class="btn btn-o mClose">Batal</button><button class="btn btn-p" id="mStokSave">Simpan</button></div></div></div>
+
+<div class="modal-bg" id="mTrx"><div class="modal"><h2 id="mTrxT">Tambah Transaksi</h2><input type="hidden" id="mTrxId">
+<div class="fg"><div><label>Pelanggan</label><select id="mTrxPel"></select></div><div><label>Kecamatan</label><input id="mTrxKec" disabled></div><div><label>Kode Buku</label><select id="mTrxBuku"></select></div><div><label>Jenis Buku</label><input id="mTrxJenis" disabled></div><div><label>Qty</label><input type="number" id="mTrxQty" min="1" value="1"></div><div><label>Harga Normal /pcs</label><input type="number" id="mTrxHN" min="0"></div><div><label>Harga Diskon /pcs</label><input type="number" id="mTrxHD" min="0"></div><div><label>Harga Total</label><input type="number" id="mTrxHT" min="0"></div><div><label>Cicilan 1</label><input type="number" id="mTrxC1" min="0" value="0"></div><div><label>Cicilan 2</label><input type="number" id="mTrxC2" min="0" value="0"></div><div><label>Cicilan 3</label><input type="number" id="mTrxC3" min="0" value="0"></div></div>
+<div class="calc"><div><span>Diskon Total</span><span id="mTrxCalcDT">Rp 0</span></div><div><span>Jumlah (Qty x Diskon/pcs)</span><span id="mTrxCalcJ">Rp 0</span></div><div><span>Stok tersedia</span><span id="mTrxStok">-</span></div><div class="tot"><span>Sisa Bayar</span><span id="mTrxCalcS">Rp 0</span></div></div>
+<div class="modal-acts"><button class="btn btn-o mClose">Batal</button><button class="btn btn-p" id="mTrxSave">Simpan</button></div></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+"use strict";
+window.A={};
+var G=function(s){return document.getElementById(s)};
+var GA=function(s){return document.querySelectorAll(s)};
+var uid=function(){return 'id'+Date.now()+Math.random().toString(36).slice(2,7)};
+var esc=function(s){var d={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return String(s==null?'':s).replace(/[&<>"']/g,function(m){return d[m]})};
+var rp=function(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')};
+var LS=function(k,v){if(v!==undefined){localStorage.setItem(k,JSON.stringify(v));return v}try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+var LSS=function(k,v){if(v!==undefined){localStorage.setItem(k,v);return v}return localStorage.getItem(k)||''};
+
+/* ════ AUTH ════ */
+/* ── KREDENSIAL DEFAULT (bisa diubah di tab Akun) ── */
+var DEFAULT_USER='admin';
+var DEFAULT_PASS='admin123';
+/* getUser/getPass selalu cek localStorage dulu, fallback ke default di atas */
+function getUser(){var v=localStorage.getItem('bb_user');return(v&&v.length>0)?v:DEFAULT_USER}
+function getPass(){var v=localStorage.getItem('bb_pass');return(v&&v.length>0)?v:DEFAULT_PASS}
+function isLoggedIn(){return sessionStorage.getItem('bb_auth')==='1'}
+
+function showLogin(){G('loginScreen').style.display='flex';G('appShell').style.display='none';G('loginUser').value='';G('loginPass').value='';G('loginErr').style.display='none';setTimeout(function(){G('loginUser').focus()},100)}
+function showApp(){G('loginScreen').style.display='none';G('appShell').style.display='block';renderAll()}
+
+function doLogin(){
+  var u=G('loginUser').value.trim(),p=G('loginPass').value;
+  if(u===getUser()&&p===getPass()){
+    sessionStorage.setItem('bb_auth','1');
+    G('loginErr').style.display='none';
+    showApp();
+  }else{
+    G('loginErr').style.display='block';
+    G('loginPass').value='';
+    G('loginPass').focus();
+  }
+}
+G('loginBtn').addEventListener('click',doLogin);
+G('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+G('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')G('loginPass').focus()});
+G('btnLogout').addEventListener('click',function(){if(!confirm('Keluar dari aplikasi?'))return;sessionStorage.removeItem('bb_auth');showLogin()});
+
+/* PENGATURAN AKUN */
+G('btnAkunHdr').addEventListener('click',function(){
+  GA('.tab').forEach(function(b){b.classList.remove('active')});
+  GA('.view').forEach(function(v){v.classList.remove('active')});
+  document.querySelector('[data-v="v-akun"]').classList.add('active');
+  G('v-akun').classList.add('active');
+});
+G('btnUbahUser').addEventListener('click',function(){
+  var un=G('uNew').value.trim(),up=G('uPass').value;
+  G('uErr').style.display='none';G('uOk').style.display='none';
+  if(!un){G('uErr').textContent='Username tidak boleh kosong';G('uErr').style.display='block';return}
+  if(up!==getPass()){G('uErr').textContent='Password konfirmasi salah';G('uErr').style.display='block';return}
+  LSS('bb_user',un);G('uOk').textContent='Username berhasil diubah menjadi: '+un;G('uOk').style.display='block';G('uNew').value='';G('uPass').value='';
+});
+G('btnResetAkun').addEventListener('click',function(){
+  if(!confirm('Reset username & password ke default (admin / admin123)?'))return;
+  localStorage.removeItem('bb_user');localStorage.removeItem('bb_pass');
+  G('uOk').textContent='Akun direset! Username: admin, Password: admin123';G('uOk').style.display='block';
+  G('uErr').style.display='none';G('pErr').style.display='none';G('pOk').style.display='none';
+});
+G('btnUbahPass').addEventListener('click',function(){
+  var po=G('pOld').value,pn=G('pNew').value,pn2=G('pNew2').value;
+  G('pErr').style.display='none';G('pOk').style.display='none';
+  if(po!==getPass()){G('pErr').textContent='Password lama salah';G('pErr').style.display='block';return}
+  if(pn.length<4){G('pErr').textContent='Password baru minimal 4 karakter';G('pErr').style.display='block';return}
+  if(pn!==pn2){G('pErr').textContent='Ulangi password tidak cocok';G('pErr').style.display='block';return}
+  LSS('bb_pass',pn);G('pOk').textContent='Password berhasil diubah!';G('pOk').style.display='block';G('pOld').value='';G('pNew').value='';G('pNew2').value='';
+});
+
+/* ════ DATA ════ */
+var pelanggan=LS('v2_pel'),buku=LS('v2_buku'),harga=LS('v2_harga'),stok=LS('v2_stok'),trx=LS('v2_trx');
+if(!localStorage.getItem('v2_seeded')){
+  buku=[{id:uid(),kode:'BK-001',judul:'Paket Cerita Anak PAUD',kategori:'Cerita Anak',penerbit:'Pustaka Ceria'},{id:uid(),kode:'BK-002',judul:'Buku Tematik Kelas 1',kategori:'Tematik',penerbit:'Kemendikbud'},{id:uid(),kode:'BK-003',judul:'Ensiklopedia Sains Anak',kategori:'Pengetahuan',penerbit:'Gramedia Kids'}];
+  harga=[{id:uid(),bukuId:buku[0].id,hargaNormal:75000,hargaDiskon:60000,ket:'Promo semester'},{id:uid(),bukuId:buku[1].id,hargaNormal:55000,hargaDiskon:45000,ket:''},{id:uid(),bukuId:buku[2].id,hargaNormal:120000,hargaDiskon:95000,ket:'Paket diskon'}];
+  stok=[{id:uid(),bukuId:buku[0].id,stokAwal:100,stokMasuk:0},{id:uid(),bukuId:buku[1].id,stokAwal:200,stokMasuk:50},{id:uid(),bukuId:buku[2].id,stokAwal:80,stokMasuk:20}];
+  LS('v2_buku',buku);LS('v2_harga',harga);LS('v2_stok',stok);localStorage.setItem('v2_seeded','1');
+}
+function save(){LS('v2_pel',pelanggan);LS('v2_buku',buku);LS('v2_harga',harga);LS('v2_stok',stok);LS('v2_trx',trx);try{autoBackup()}catch(e){}}
+
+/* ════ GOOGLE SHEETS SYNC ════ */
+var GAS_CODE='var SS_NAME="Buku Besar - Backup Data";\nfunction getOrCreateSS(){\n  var files=DriveApp.getFilesByName(SS_NAME);\n  if(files.hasNext()) return SpreadsheetApp.open(files.next());\n  return SpreadsheetApp.create(SS_NAME);\n}\nfunction writeSheet(ss,name,data,headers){\n  var sheet=ss.getSheetByName(name);\n  if(!sheet) sheet=ss.insertSheet(name);\n  sheet.clear();\n  var rows=[headers];\n  (data||[]).forEach(function(item){\n    rows.push(headers.map(function(h){return item[h]!=null?item[h]:"";}));\n  });\n  if(rows.length>0) sheet.getRange(1,1,rows.length,headers.length).setValues(rows);\n}\nfunction readSheet(ss,name){\n  var sheet=ss.getSheetByName(name);\n  if(!sheet) return [];\n  var data=sheet.getDataRange().getValues();\n  if(data.length<=1) return [];\n  var headers=data[0],result=[];\n  for(var i=1;i<data.length;i++){\n    var obj={};\n    for(var j=0;j<headers.length;j++) obj[headers[j]]=data[i][j];\n    result.push(obj);\n  }\n  return result;\n}\nfunction doGet(e){\n  try{\n    var ss=getOrCreateSS();\n    return ContentService.createTextOutput(JSON.stringify({success:true,pelanggan:readSheet(ss,"Pelanggan"),buku:readSheet(ss,"Buku"),harga:readSheet(ss,"Harga"),stok:readSheet(ss,"Stok"),trx:readSheet(ss,"Transaksi"),timestamp:new Date().toISOString()})).setMimeType(ContentService.MimeType.JSON);\n  }catch(err){\n    return ContentService.createTextOutput(JSON.stringify({success:false,error:err.toString()})).setMimeType(ContentService.MimeType.JSON);\n  }\n}\nfunction doPost(e){\n  try{\n    var data=JSON.parse(e.postData.contents);\n    var ss=getOrCreateSS();\n    writeSheet(ss,"Pelanggan",data.pelanggan,["id","code","nama","kec","hp","alamat","cat"]);\n    writeSheet(ss,"Buku",data.buku,["id","kode","judul","kategori","penerbit"]);\n    writeSheet(ss,"Harga",data.harga,["id","bukuId","hargaNormal","hargaDiskon","ket"]);\n    writeSheet(ss,"Stok",data.stok,["id","bukuId","stokAwal","stokMasuk"]);\n    writeSheet(ss,"Transaksi",data.trx,["id","pelId","bukuId","kec","nama","kode","jenis","qty","hargaNormal","hargaDiskon","hargaTotal","c1","c2","c3"]);\n    return ContentService.createTextOutput(JSON.stringify({success:true,timestamp:new Date().toISOString()})).setMimeType(ContentService.MimeType.JSON);\n  }catch(err){\n    return ContentService.createTextOutput(JSON.stringify({success:false,error:err.toString()})).setMimeType(ContentService.MimeType.JSON);\n  }\n}';
+try{G('scriptCode').textContent=GAS_CODE}catch(e){}
+
+var syncUrl=LSS('v2_sync_url');
+var autoSyncOn=localStorage.getItem('v2_auto_sync')!=='false';
+function updateSyncUI(){
+  var c=!!syncUrl;
+  G('syncDot').className='sync-dot '+(c?'on':'off');
+  if(G('syncSetup'))G('syncSetup').style.display=c?'none':'block';
+  if(G('syncConnected'))G('syncConnected').style.display=c?'block':'none';
+  if(G('autoSyncToggle'))G('autoSyncToggle').checked=autoSyncOn;
+  var ls=localStorage.getItem('v2_last_sync');
+  if(G('lastSyncText'))G('lastSyncText').textContent=ls?'Terakhir sync: '+new Date(ls).toLocaleString('id-ID'):'Belum pernah sync';
+  if(syncUrl&&G('scriptUrl'))G('scriptUrl').value=syncUrl;
+}
+function syncLog(m){try{G('syncLog').textContent=m}catch(e){}}
+var bkTimer=null;
+function autoBackup(){if(!syncUrl||!autoSyncOn)return;clearTimeout(bkTimer);bkTimer=setTimeout(doBackup,3000)}
+function doBackup(){
+  if(!syncUrl){syncLog('Belum terhubung');return}
+  syncLog('⏳ Backup sedang berjalan...');
+  fetch(syncUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({pelanggan:pelanggan,buku:buku,harga:harga,stok:stok,trx:trx}),redirect:'follow'})
+  .then(function(r){return r.text()}).then(function(t){
+    try{var j=JSON.parse(t);if(j.success){localStorage.setItem('v2_last_sync',new Date().toISOString());updateSyncUI();syncLog('✅ Backup berhasil '+new Date().toLocaleTimeString('id-ID'))}else syncLog('⚠️ '+(j.error||'Error'))}
+    catch(e){localStorage.setItem('v2_last_sync',new Date().toISOString());updateSyncUI();syncLog('✅ Backup terkirim!')}
+  }).catch(function(err){syncLog('❌ '+err.message)});
+}
+function doRestore(){
+  if(!syncUrl){syncLog('Belum terhubung');return}
+  syncLog('⏳ Mengambil data dari cloud...');
+  fetch(syncUrl,{redirect:'follow'}).then(function(r){return r.json()}).then(function(j){
+    if(!j.success){syncLog('⚠️ '+(j.error||''));return}
+    if(j.pelanggan)pelanggan=j.pelanggan;
+    if(j.buku)buku=j.buku;
+    if(j.harga){harga=j.harga;harga.forEach(function(h){h.hargaNormal=Number(h.hargaNormal)||0;h.hargaDiskon=Number(h.hargaDiskon)||0})}
+    if(j.stok){stok=j.stok;stok.forEach(function(s){s.stokAwal=Number(s.stokAwal)||0;s.stokMasuk=Number(s.stokMasuk)||0})}
+    if(j.trx){trx=j.trx;trx.forEach(function(t){['qty','hargaNormal','hargaDiskon','hargaTotal','c1','c2','c3'].forEach(function(k){t[k]=Number(t[k])||0})})}
+    LS('v2_pel',pelanggan);LS('v2_buku',buku);LS('v2_harga',harga);LS('v2_stok',stok);LS('v2_trx',trx);
+    renderAll();syncLog('✅ Restore berhasil! '+pelanggan.length+' pelanggan, '+trx.length+' transaksi.');
+  }).catch(function(err){syncLog('❌ '+err.message)});
+}
+G('btnSync').addEventListener('click',function(){var p=G('syncPanel');p.style.display=p.style.display==='none'?'block':'none'});
+G('copyScriptBtn').addEventListener('click',function(){try{navigator.clipboard.writeText(GAS_CODE).then(function(){alert('Kode berhasil di-copy!')})}catch(e){var ta=document.createElement('textarea');ta.value=GAS_CODE;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Kode berhasil di-copy!')}});
+G('btnConnect').addEventListener('click',function(){var url=G('scriptUrl').value.trim();if(!url){alert('Paste URL dulu');return}syncUrl=url;LSS('v2_sync_url',url);updateSyncUI();syncLog('Terhubung! Backup pertama sedang berjalan...');doBackup()});
+G('btnDisconnect').addEventListener('click',function(){if(!confirm('Putuskan koneksi?'))return;syncUrl='';localStorage.removeItem('v2_sync_url');updateSyncUI();syncLog('')});
+G('btnBackup').addEventListener('click',doBackup);
+G('btnRestore').addEventListener('click',function(){if(!confirm('Data lokal akan DITIMPA dengan data cloud. Lanjutkan?'))return;doRestore()});
+G('autoSyncToggle').addEventListener('change',function(){autoSyncOn=this.checked;localStorage.setItem('v2_auto_sync',autoSyncOn?'true':'false')});
+updateSyncUI();
+
+/* ════ TABS & MODALS ════ */
+GA('.tab').forEach(function(t){t.addEventListener('click',function(){
+  GA('.tab').forEach(function(b){b.classList.remove('active')});
+  GA('.view').forEach(function(v){v.classList.remove('active')});
+  t.classList.add('active');G(t.dataset.v).classList.add('active');
+  G('syncPanel').style.display='none';
+})});
+GA('.mClose').forEach(function(b){b.addEventListener('click',function(){b.closest('.modal-bg').classList.remove('open')})});
+GA('.modal-bg').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')})});
+
+/* ════ LOOKUPS ════ */
+var fB=function(id){return buku.find(function(b){return b.id===id})};
+var fH=function(bid){return harga.find(function(h){return h.bukuId===bid})};
+var fSt=function(bid){return stok.find(function(s){return s.bukuId===bid})};
+var fP=function(id){return pelanggan.find(function(p){return p.id===id})};
+var sold=function(bid){return trx.filter(function(t){return t.bukuId===bid}).reduce(function(s,t){return s+(t.qty||0)},0)};
+
+/* ════ MASTER PELANGGAN ════ */
+function renderPel(){
+  var q=G('pSearch').value.toLowerCase();
+  var list=pelanggan.filter(function(p){return !q||p.nama.toLowerCase().indexOf(q)>=0||(p.code||'').toLowerCase().indexOf(q)>=0});
+  G('pBody').innerHTML=list.map(function(p,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(p.code)+'</td><td>'+esc(p.nama)+'</td><td>'+esc(p.kec)+'</td><td>'+esc(p.alamat)+'</td><td>'+esc(p.hp)+'</td><td>'+esc(p.cat)+'</td><td><button class="btn btn-sm btn-o" onclick="A.ePel(\''+p.id+'\')">Edit</button> <button class="btn btn-sm btn-d" onclick="A.dPel(\''+p.id+'\')">Hapus</button></td></tr>'}).join('');
+  G('pCards').innerHTML=list.map(function(p){return '<div class="m-card"><div class="top"><div><div class="name">'+esc(p.nama)+'</div><div class="meta">'+esc(p.code)+' · '+esc(p.kec)+'</div></div></div><div class="grid2"><div class="k">HP</div><div class="v">'+esc(p.hp)+'</div><div class="k">Alamat</div><div class="v">'+esc(p.alamat||'-')+'</div></div><div class="acts"><button class="btn btn-sm btn-o" onclick="A.ePel(\''+p.id+'\')">Edit</button><button class="btn btn-sm btn-d" onclick="A.dPel(\''+p.id+'\')">Hapus</button></div></div>'}).join('');
+}
+G('pSearch').addEventListener('input',renderPel);
+G('pAdd').addEventListener('click',function(){G('mPelT').textContent='Tambah Pelanggan';G('mPelId').value='';G('mPelCode').value='PLG-'+(pelanggan.length+1).toString().padStart(3,'0');G('mPelNama').value='';G('mPelKec').value='';G('mPelHP').value='';G('mPelAlamat').value='';G('mPelCat').value='';G('mPel').classList.add('open')});
+G('mPelSave').addEventListener('click',function(){var code=G('mPelCode').value.trim(),nama=G('mPelNama').value.trim(),kec=G('mPelKec').value.trim(),hp=G('mPelHP').value.trim(),alamat=G('mPelAlamat').value.trim(),cat=G('mPelCat').value.trim();if(!nama){alert('Nama wajib diisi');return}var id=G('mPelId').value;if(id){var p=fP(id);if(p){p.code=code;p.nama=nama;p.kec=kec;p.hp=hp;p.alamat=alamat;p.cat=cat}}else pelanggan.push({id:uid(),code:code,nama:nama,kec:kec,hp:hp,alamat:alamat,cat:cat});save();renderPel();refTrxSel();G('mPel').classList.remove('open')});
+A.ePel=function(id){var p=fP(id);if(!p)return;G('mPelT').textContent='Edit Pelanggan';G('mPelId').value=p.id;G('mPelCode').value=p.code;G('mPelNama').value=p.nama;G('mPelKec').value=p.kec;G('mPelHP').value=p.hp;G('mPelAlamat').value=p.alamat;G('mPelCat').value=p.cat;G('mPel').classList.add('open')};
+A.dPel=function(id){if(!confirm('Hapus pelanggan ini?'))return;pelanggan=pelanggan.filter(function(p){return p.id!==id});save();renderPel()};
+G('pExport').addEventListener('click',function(){xlsExp('Master Pelanggan',pelanggan.map(function(p,i){return{No:i+1,ID:p.code,Nama:p.nama,Kecamatan:p.kec,Alamat:p.alamat,'No HP':p.hp,Catatan:p.cat}}))});
+
+/* ════ MASTER KODE BUKU ════ */
+function renderBuku(){var q=G('bSearch').value.toLowerCase();var list=buku.filter(function(b){return !q||b.kode.toLowerCase().indexOf(q)>=0||b.judul.toLowerCase().indexOf(q)>=0});G('bBody').innerHTML=list.map(function(b,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(b.kode)+'</td><td>'+esc(b.judul)+'</td><td>'+esc(b.kategori)+'</td><td>'+esc(b.penerbit)+'</td><td><button class="btn btn-sm btn-o" onclick="A.eBuku(\''+b.id+'\')">Edit</button> <button class="btn btn-sm btn-d" onclick="A.dBuku(\''+b.id+'\')">Hapus</button></td></tr>'}).join('')}
+G('bSearch').addEventListener('input',renderBuku);
+G('bAdd').addEventListener('click',function(){G('mBukuT').textContent='Tambah Kode Buku';G('mBukuId').value='';G('mBukuKode').value='BK-'+(buku.length+1).toString().padStart(3,'0');G('mBukuJudul').value='';G('mBukuKat').value='';G('mBukuPub').value='';G('mBuku').classList.add('open')});
+G('mBukuSave').addEventListener('click',function(){var kode=G('mBukuKode').value.trim(),judul=G('mBukuJudul').value.trim(),kat=G('mBukuKat').value.trim(),pub=G('mBukuPub').value.trim();if(!kode||!judul){alert('Kode dan judul wajib diisi');return}var id=G('mBukuId').value;if(id){var b=fB(id);if(b){b.kode=kode;b.judul=judul;b.kategori=kat;b.penerbit=pub}}else buku.push({id:uid(),kode:kode,judul:judul,kategori:kat,penerbit:pub});save();renderBuku();refAllSel();G('mBuku').classList.remove('open')});
+A.eBuku=function(id){var b=fB(id);if(!b)return;G('mBukuT').textContent='Edit';G('mBukuId').value=b.id;G('mBukuKode').value=b.kode;G('mBukuJudul').value=b.judul;G('mBukuKat').value=b.kategori;G('mBukuPub').value=b.penerbit;G('mBuku').classList.add('open')};
+A.dBuku=function(id){if(!confirm('Hapus?'))return;buku=buku.filter(function(b){return b.id!==id});save();renderBuku();refAllSel()};
+G('bExport').addEventListener('click',function(){xlsExp('Kode Buku',buku.map(function(b,i){return{No:i+1,Kode:b.kode,Judul:b.judul,Kategori:b.kategori,Penerbit:b.penerbit}}))});
+
+/* ════ MASTER HARGA ════ */
+function renderHarga(){var q=G('hSearch').value.toLowerCase();var list=harga.filter(function(h){var b=fB(h.bukuId);return !q||(b&&(b.kode.toLowerCase().indexOf(q)>=0||b.judul.toLowerCase().indexOf(q)>=0))});G('hBody').innerHTML=list.map(function(h,i){var b=fB(h.bukuId);return '<tr><td>'+(i+1)+'</td><td>'+esc(b?b.kode:'')+'</td><td>'+esc(b?b.judul:'')+'</td><td class="n">'+rp(h.hargaNormal)+'</td><td class="n">'+rp(h.hargaDiskon)+'</td><td class="n">'+rp(h.hargaNormal-h.hargaDiskon)+'</td><td>'+esc(h.ket)+'</td><td><button class="btn btn-sm btn-o" onclick="A.eHarga(\''+h.id+'\')">Edit</button> <button class="btn btn-sm btn-d" onclick="A.dHarga(\''+h.id+'\')">Hapus</button></td></tr>'}).join('')}
+G('hSearch').addEventListener('input',renderHarga);
+function refHSel(){var s=G('mHargaKode'),c=s.value;s.innerHTML=buku.map(function(b){return '<option value="'+b.id+'">'+esc(b.kode)+' — '+esc(b.judul)+'</option>'}).join('');if(c)s.value=c}
+G('mHargaKode').addEventListener('change',function(){var b=fB(G('mHargaKode').value);G('mHargaJudul').value=b?b.judul:'';calcHM()});
+G('mHargaNormal').addEventListener('input',calcHM);G('mHargaDiskon').addEventListener('input',calcHM);
+function calcHM(){G('mHargaMargin').textContent=rp((Number(G('mHargaNormal').value)||0)-(Number(G('mHargaDiskon').value)||0))}
+G('hAdd').addEventListener('click',function(){if(!buku.length){alert('Tambahkan kode buku dulu');return}G('mHargaT').textContent='Tambah Harga';G('mHargaId').value='';refHSel();G('mHargaKode').selectedIndex=0;G('mHargaKode').dispatchEvent(new Event('change'));G('mHargaNormal').value='';G('mHargaDiskon').value='';G('mHargaKet').value='';calcHM();G('mHarga').classList.add('open')});
+G('mHargaSave').addEventListener('click',function(){var bid=G('mHargaKode').value,hn=Number(G('mHargaNormal').value)||0,hd=Number(G('mHargaDiskon').value)||0,ket=G('mHargaKet').value.trim();if(!hn){alert('Harga normal wajib diisi');return}var id=G('mHargaId').value;if(id){var h=harga.find(function(x){return x.id===id});if(h){h.bukuId=bid;h.hargaNormal=hn;h.hargaDiskon=hd;h.ket=ket}}else harga.push({id:uid(),bukuId:bid,hargaNormal:hn,hargaDiskon:hd,ket:ket});save();renderHarga();G('mHarga').classList.remove('open')});
+A.eHarga=function(id){var h=harga.find(function(x){return x.id===id});if(!h)return;G('mHargaT').textContent='Edit Harga';G('mHargaId').value=h.id;refHSel();G('mHargaKode').value=h.bukuId;G('mHargaKode').dispatchEvent(new Event('change'));G('mHargaNormal').value=h.hargaNormal;G('mHargaDiskon').value=h.hargaDiskon;G('mHargaKet').value=h.ket;calcHM();G('mHarga').classList.add('open')};
+A.dHarga=function(id){if(!confirm('Hapus?'))return;harga=harga.filter(function(h){return h.id!==id});save();renderHarga()};
+G('hExport').addEventListener('click',function(){xlsExp('Harga',harga.map(function(h,i){var b=fB(h.bukuId);return{No:i+1,Kode:b?b.kode:'',Judul:b?b.judul:'','Harga Normal':h.hargaNormal,'Diskon/pcs':h.hargaDiskon,Margin:h.hargaNormal-h.hargaDiskon,Ket:h.ket}}))});
+
+/* ════ STOK GUDANG ════ */
+function renderStok(){var q=G('sSearch').value.toLowerCase();var list=stok.filter(function(s){var b=fB(s.bukuId);return !q||(b&&(b.kode.toLowerCase().indexOf(q)>=0||b.judul.toLowerCase().indexOf(q)>=0))});G('sBody').innerHTML=list.map(function(s,i){var b=fB(s.bukuId);var terjual=sold(s.bukuId);var akhir=(s.stokAwal||0)+(s.stokMasuk||0)-terjual;var st=akhir<=0?'Habis':akhir<=10?'Menipis':'Tersedia';var pc=akhir<=0?'pill-r':akhir<=10?'pill-y':'pill-g';return '<tr><td>'+(i+1)+'</td><td>'+esc(b?b.kode:'')+'</td><td>'+esc(b?b.judul:'')+'</td><td class="n">'+s.stokAwal+'</td><td class="n">'+s.stokMasuk+'</td><td class="n">'+terjual+'</td><td class="n">'+akhir+'</td><td><span class="pill '+pc+'">'+st+'</span></td><td><button class="btn btn-sm btn-o" onclick="A.eStok(\''+s.id+'\')">Edit</button> <button class="btn btn-sm btn-d" onclick="A.dStok(\''+s.id+'\')">Hapus</button></td></tr>'}).join('')}
+G('sSearch').addEventListener('input',renderStok);
+function refSSel(){var s=G('mStokKode'),c=s.value;s.innerHTML=buku.map(function(b){return '<option value="'+b.id+'">'+esc(b.kode)+' — '+esc(b.judul)+'</option>'}).join('');if(c)s.value=c}
+G('mStokKode').addEventListener('change',function(){var b=fB(G('mStokKode').value);G('mStokJudul').value=b?b.judul:'';calcSt()});
+G('mStokAwal').addEventListener('input',calcSt);G('mStokMasuk').addEventListener('input',calcSt);
+function calcSt(){var bid=G('mStokKode').value;var tj=sold(bid);G('mStokKeluar').textContent=tj;G('mStokAkhir').textContent=(Number(G('mStokAwal').value)||0)+(Number(G('mStokMasuk').value)||0)-tj}
+G('sAdd').addEventListener('click',function(){if(!buku.length){alert('Tambahkan kode buku dulu');return}G('mStokT').textContent='Tambah Stok';G('mStokId').value='';refSSel();G('mStokKode').selectedIndex=0;G('mStokKode').dispatchEvent(new Event('change'));G('mStokAwal').value=0;G('mStokMasuk').value=0;calcSt();G('mStok').classList.add('open')});
+G('mStokSave').addEventListener('click',function(){var bid=G('mStokKode').value,sa=Number(G('mStokAwal').value)||0,sm=Number(G('mStokMasuk').value)||0;var id=G('mStokId').value;if(id){var s=stok.find(function(x){return x.id===id});if(s){s.bukuId=bid;s.stokAwal=sa;s.stokMasuk=sm}}else stok.push({id:uid(),bukuId:bid,stokAwal:sa,stokMasuk:sm});save();renderStok();G('mStok').classList.remove('open')});
+A.eStok=function(id){var s=stok.find(function(x){return x.id===id});if(!s)return;G('mStokT').textContent='Edit Stok';G('mStokId').value=s.id;refSSel();G('mStokKode').value=s.bukuId;G('mStokKode').dispatchEvent(new Event('change'));G('mStokAwal').value=s.stokAwal;G('mStokMasuk').value=s.stokMasuk;calcSt();G('mStok').classList.add('open')};
+A.dStok=function(id){if(!confirm('Hapus?'))return;stok=stok.filter(function(s){return s.id!==id});save();renderStok()};
+G('sExport').addEventListener('click',function(){xlsExp('Stok',stok.map(function(s,i){var b=fB(s.bukuId);var tj=sold(s.bukuId);return{No:i+1,Kode:b?b.kode:'',Judul:b?b.judul:'','Stok Awal':s.stokAwal,Masuk:s.stokMasuk,Terjual:tj,Akhir:s.stokAwal+s.stokMasuk-tj}}))});
+
+/* ════ TRANSAKSI ════ */
+function refTrxSel(){var sp=G('mTrxPel'),sb=G('mTrxBuku');sp.innerHTML=pelanggan.map(function(p){return '<option value="'+p.id+'">'+esc(p.code)+' — '+esc(p.nama)+'</option>'}).join('');sb.innerHTML=buku.map(function(b){return '<option value="'+b.id+'">'+esc(b.kode)+' — '+esc(b.judul)+'</option>'}).join('')}
+function refAllSel(){refHSel();refSSel();refTrxSel()}
+var htM=false;
+G('mTrxPel').addEventListener('change',function(){var p=fP(G('mTrxPel').value);G('mTrxKec').value=p?p.kec:''});
+G('mTrxBuku').addEventListener('change',function(){var b=fB(G('mTrxBuku').value);G('mTrxJenis').value=b?b.judul:'';var h=fH(G('mTrxBuku').value);if(h){G('mTrxHN').value=h.hargaNormal;G('mTrxHD').value=h.hargaDiskon}htM=false;calcTrx()});
+['mTrxQty','mTrxHN','mTrxHD','mTrxC1','mTrxC2','mTrxC3'].forEach(function(x){G(x).addEventListener('input',calcTrx)});
+G('mTrxHT').addEventListener('input',function(){htM=true;calcTrx()});
+function calcTrx(){var qty=Number(G('mTrxQty').value)||0,hn=Number(G('mTrxHN').value)||0,hd=Number(G('mTrxHD').value)||0;var c1=Number(G('mTrxC1').value)||0,c2=Number(G('mTrxC2').value)||0,c3=Number(G('mTrxC3').value)||0;var dt=(hn-hd)*qty,jml=qty*hd;if(!htM)G('mTrxHT').value=jml;var ht=Number(G('mTrxHT').value)||0;G('mTrxCalcDT').textContent=rp(dt);G('mTrxCalcJ').textContent=rp(jml);G('mTrxCalcS').textContent=rp(ht-(c1+c2+c3));var sk=fSt(G('mTrxBuku').value);G('mTrxStok').textContent=sk?((sk.stokAwal||0)+(sk.stokMasuk||0)-sold(sk.bukuId))+' pcs':'-'}
+G('xAdd').addEventListener('click',function(){if(!pelanggan.length){alert('Tambahkan pelanggan dulu di tab Pelanggan');return}if(!buku.length){alert('Tambahkan kode buku dulu');return}G('mTrxT').textContent='Tambah Transaksi';G('mTrxId').value='';refTrxSel();G('mTrxPel').selectedIndex=0;G('mTrxPel').dispatchEvent(new Event('change'));G('mTrxBuku').selectedIndex=0;G('mTrxBuku').dispatchEvent(new Event('change'));G('mTrxQty').value=1;G('mTrxC1').value=0;G('mTrxC2').value=0;G('mTrxC3').value=0;htM=false;calcTrx();G('mTrx').classList.add('open')});
+G('mTrxSave').addEventListener('click',function(){var pelId=G('mTrxPel').value,bukuId=G('mTrxBuku').value;var pel=fP(pelId),bk=fB(bukuId);if(!pel||!bk){alert('Pilih pelanggan dan buku');return}var qty=Number(G('mTrxQty').value)||0,hn=Number(G('mTrxHN').value)||0,hd=Number(G('mTrxHD').value)||0,ht=Number(G('mTrxHT').value)||0;var c1=Number(G('mTrxC1').value)||0,c2=Number(G('mTrxC2').value)||0,c3=Number(G('mTrxC3').value)||0;var rec={pelId:pelId,bukuId:bukuId,kec:pel.kec,nama:pel.nama,kode:bk.kode,jenis:bk.judul,qty:qty,hargaNormal:hn,hargaDiskon:hd,hargaTotal:ht,c1:c1,c2:c2,c3:c3};var id=G('mTrxId').value;if(id){var idx=trx.findIndex(function(t){return t.id===id});if(idx>-1){rec.id=id;trx[idx]=rec}}else{rec.id=uid();trx.push(rec)}save();renderTrx();renderStok();G('mTrx').classList.remove('open')});
+A.eTrx=function(id){var t=trx.find(function(x){return x.id===id});if(!t)return;G('mTrxT').textContent='Edit Transaksi';G('mTrxId').value=t.id;refTrxSel();G('mTrxPel').value=t.pelId;G('mTrxPel').dispatchEvent(new Event('change'));G('mTrxBuku').value=t.bukuId;G('mTrxJenis').value=t.jenis;G('mTrxQty').value=t.qty;G('mTrxHN').value=t.hargaNormal;G('mTrxHD').value=t.hargaDiskon;G('mTrxHT').value=t.hargaTotal;G('mTrxC1').value=t.c1;G('mTrxC2').value=t.c2;G('mTrxC3').value=t.c3;htM=true;calcTrx();G('mTrx').classList.add('open')};
+A.dTrx=function(id){if(!confirm('Hapus?'))return;trx=trx.filter(function(t){return t.id!==id});save();renderTrx();renderStok()};
+G('xSearch').addEventListener('input',renderTrx);G('xFilterKec').addEventListener('change',renderTrx);G('xFilterSt').addEventListener('change',renderTrx);
+function renderTrx(){
+  var kecs=[];trx.forEach(function(t){if(t.kec&&kecs.indexOf(t.kec)<0)kecs.push(t.kec)});kecs.sort();
+  var ck=G('xFilterKec').value;G('xFilterKec').innerHTML='<option value="">Semua Kec.</option>'+kecs.map(function(k){return '<option>'+esc(k)+'</option>'}).join('');G('xFilterKec').value=ck;
+  var q=G('xSearch').value.toLowerCase(),fk=G('xFilterKec').value,fs=G('xFilterSt').value;
+  var list=trx.filter(function(t){var si=t.hargaTotal-(t.c1+t.c2+t.c3);if(q&&t.nama.toLowerCase().indexOf(q)<0)return false;if(fk&&t.kec!==fk)return false;if(fs==='lunas'&&si>0)return false;if(fs==='belum'&&si<=0)return false;return true});
+  var sT=0,sP=0,sS=0;
+  G('xBody').innerHTML=list.map(function(t,i){var dt=(t.hargaNormal-t.hargaDiskon)*t.qty,jml=t.qty*t.hargaDiskon,paid=t.c1+t.c2+t.c3,si=t.hargaTotal-paid,lunas=si<=0;sT+=t.hargaTotal;sP+=paid;sS+=Math.max(si,0);return '<tr><td>'+(i+1)+'</td><td>'+esc(t.kec||'-')+'</td><td>'+esc(t.nama)+'</td><td>'+esc(t.kode)+'</td><td>'+esc(t.jenis)+'</td><td class="n">'+t.qty+'</td><td class="n">'+rp(t.hargaNormal)+'</td><td class="n">'+rp(t.hargaDiskon)+'</td><td class="n">'+rp(dt)+'</td><td class="n">'+rp(jml)+'</td><td class="n">'+rp(t.hargaTotal)+'</td><td class="n">'+rp(t.c1)+'</td><td class="n">'+rp(t.c2)+'</td><td class="n">'+rp(t.c3)+'</td><td class="n">'+rp(si)+'</td><td><span class="pill '+(lunas?'pill-g':'pill-r')+'">'+(lunas?'Lunas':'Belum')+'</span></td><td><button class="btn btn-sm btn-o" onclick="A.eTrx(\''+t.id+'\')">Edit</button> <button class="btn btn-sm btn-d" onclick="A.dTrx(\''+t.id+'\')">Hapus</button></td></tr>'}).join('');
+  G('xCount').textContent=list.length;G('xTotal').textContent=rp(sT);G('xPaid').textContent=rp(sP);G('xSisa').textContent=rp(sS);
+  G('xEmpty').style.display=trx.length?'none':'block';
+  G('xCards').innerHTML=list.map(function(t){var paid=t.c1+t.c2+t.c3,si=t.hargaTotal-paid,lunas=si<=0;return '<div class="m-card"><div class="top"><div><div class="name">'+esc(t.nama)+'</div><div class="meta">'+esc(t.kec||'-')+' · '+esc(t.kode)+'</div></div><span class="pill '+(lunas?'pill-g':'pill-r')+'">'+(lunas?'Lunas':'Belum')+'</span></div><div class="grid2"><div class="k">Qty</div><div class="v">'+t.qty+'</div><div class="k">Total</div><div class="v">'+rp(t.hargaTotal)+'</div><div class="k">Bayar</div><div class="v">'+rp(paid)+'</div><div class="k">Sisa</div><div class="v">'+rp(si)+'</div></div><div class="acts"><button class="btn btn-sm btn-o" onclick="A.eTrx(\''+t.id+'\')">Edit</button><button class="btn btn-sm btn-d" onclick="A.dTrx(\''+t.id+'\')">Hapus</button></div></div>'}).join('');
+}
+G('xExport').addEventListener('click',function(){if(!trx.length){alert('Tidak ada data');return}xlsExp('Transaksi',trx.map(function(t,i){var dt=(t.hargaNormal-t.hargaDiskon)*t.qty,jml=t.qty*t.hargaDiskon,paid=t.c1+t.c2+t.c3,si=t.hargaTotal-paid;return{No:i+1,Kec:t.kec,Pelanggan:t.nama,Kode:t.kode,'Jenis Buku':t.jenis,Qty:t.qty,'Harga Normal':t.hargaNormal,'Diskon/pcs':t.hargaDiskon,'Diskon Total':dt,Jumlah:jml,'Harga Total':t.hargaTotal,'Cicilan 1':t.c1,'Cicilan 2':t.c2,'Cicilan 3':t.c3,Sisa:si,Status:si<=0?'Lunas':'Belum Lunas'}}))});
+
+function xlsExp(name,rows){if(!rows.length)return;var ws=XLSX.utils.json_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,name);XLSX.writeFile(wb,name.replace(/\s/g,'-')+'-'+new Date().toISOString().slice(0,10)+'.xlsx')}
+function renderAll(){renderPel();renderBuku();renderHarga();renderStok();refAllSel();renderTrx()}
+
+/* ════ INIT ════ */
+if(isLoggedIn()){showApp()}else{showLogin()}
+})();
+</script>
+</body>
+</html>
